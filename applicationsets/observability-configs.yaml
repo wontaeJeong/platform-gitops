@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: observability-configs
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  generators:
+    - list:
+        elements:
+          - name: app-a
+            namespace: app-a
+            servicePort: "9090"
+          - name: app-b
+            namespace: app-b
+            servicePort: "9093"
+          - name: app-c
+            namespace: app-c
+            servicePort: "9091"
+  template:
+    metadata:
+      name: '{{name}}-observability'
+      annotations:
+        argocd.argoproj.io/sync-wave: "10"
+    spec:
+      project: apps
+      sources:
+        - repoURL: "${GITOPS_REPO_URL}"
+          targetRevision: HEAD
+          path: charts/observability-config
+          helm:
+            releaseName: '{{name}}-observability'
+            values: |
+              appName: '{{name}}'
+              service:
+                name: '{{name}}'
+                port: {{servicePort}}
+              scrapeConfig:
+                enabled: true
+                metricsPath: /metrics
+                interval: 30s
+              prometheusRule:
+                enabled: true
+              grafanaDashboard:
+                enabled: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - FailOnSharedResource=true
