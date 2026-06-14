@@ -1,0 +1,6 @@
+apiVersion: v2
+name: observability-config
+description: Prometheus and Grafana configuration examples for demo apps.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

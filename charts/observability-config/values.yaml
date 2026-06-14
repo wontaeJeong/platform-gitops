@@ -1,0 +1,16 @@
+appName: app
+
+service:
+  name: app
+  port: 8080
+
+scrapeConfig:
+  enabled: true
+  metricsPath: /metrics
+  interval: 30s
+
+prometheusRule:
+  enabled: true
+
+grafanaDashboard:
+  enabled: true

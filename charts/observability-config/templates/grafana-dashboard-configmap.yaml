@@ -1,0 +1,32 @@
+{{- if .Values.grafanaDashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "observability-config.fullname" . }}-dashboard
+  labels:
+    {{- include "observability-config.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+data:
+  {{ .Values.appName }}-dashboard.json: |
+    {
+      "title": "{{ .Values.appName }} Local Demo",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Demo app info",
+          "targets": [
+            {
+              "expr": "demo_app_info{app=\"{{ .Values.appName }}\"}",
+              "legendFormat": "{{ .Values.appName }}"
+            }
+          ],
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+        }
+      ]
+    }
+{{- end }}

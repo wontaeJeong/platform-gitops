@@ -1,0 +1,20 @@
+{{- if .Values.scrapeConfig.enabled }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: {{ include "observability-config.fullname" . }}
+  labels:
+    {{- include "observability-config.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  metricsPath: {{ .Values.scrapeConfig.metricsPath | quote }}
+  scrapeInterval: {{ .Values.scrapeConfig.interval | quote }}
+  staticConfigs:
+    - targets:
+        - {{ printf "%s.%s.svc.cluster.local:%v" .Values.service.name .Release.Namespace .Values.service.port | quote }}
+      labels:
+        job: {{ .Values.appName | quote }}
+        app: {{ .Values.appName | quote }}
+{{- end }}

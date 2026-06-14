@@ -1,0 +1,22 @@
+{{- if .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "observability-config.fullname" . }}
+  labels:
+    {{- include "observability-config.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  groups:
+    - name: {{ printf "%s.rules" .Values.appName | quote }}
+      rules:
+        - alert: {{ printf "%sDown" (.Values.appName | replace "-" "" | title) }}
+          expr: 'up{job="{{ .Values.appName }}"} == 0'
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: {{ printf "%s scrape target is down" .Values.appName | quote }}
+{{- end }}
